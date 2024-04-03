@@ -5,7 +5,7 @@ import gurobipy as gp
 import datetime
 import pandas as pd
 import numpy as np
-def optimization(session_data,DA_prices,timesteps):
+def cost_optimization(session_data,DA_prices,timesteps):
     """
     In this model, the charging schedules for all considered charging sessions are optimized to minimize the charging costs in the day-ahead electricity market. 
     Parameters
@@ -18,8 +18,9 @@ def optimization(session_data,DA_prices,timesteps):
             'VOL': the charging volume of the charging session in kWh. 
             'P_MAX': Maximum charging power of the charging session in kW.
             'P_MIN': Minimum charging power of the charging session in kW. Equal to 0 if delayed and paused charging is possible. 
-    DA_prices : Series
-        Day-ahead electricity prices for each timestep, in €/MWh.
+    DA_prices : pd.DataFrame
+        This dataframe should contain the following column:
+            'Day-ahead price [EUR/MWh]': Day-ahead electricity prices for each timestep, in €/MWh.
     timesteps : list
         List of all considered timesteps in the optimization, in CET. 
 
@@ -33,6 +34,7 @@ def optimization(session_data,DA_prices,timesteps):
     session_data.index=list(range(len(session_data)))
     m = gp.Model() #set up model
     model_resolution=15 #model resolution is 15 minutes
+    m.Params.LogToConsole = 0
     p_ch_tr = {}
     E_ch_tr = {}
     binary={}
@@ -58,7 +60,6 @@ def optimization(session_data,DA_prices,timesteps):
        m.addConstrs(p_ch_tr[tr][timesteps_tr[t]]>=p_min*binary[tr][timesteps_tr[t]] for t in range(1,len(timesteps_tr))) #If the EV is charging, it should charge at least with the minimum charging power.
        m.addConstrs(p_ch_tr[tr][timesteps_tr[t]]<=p_max*binary[tr][timesteps_tr[t]] for t in range(0,len(timesteps_tr)))#If the EV is charging, it should charge at maximum with the maximum charging power.
        m.addConstrs(binary[tr][timesteps_tr[t]]<=binary[tr][timesteps_tr[t-1]] for t in range(1,len(timesteps_tr))) #The binary variable assures that once the EV has stopped charging, it cannot resume charging. 
-
     for tr in range(len(session_data.index)): 
        plugintime=session_data['START_rounded_CET'][tr] #arrival time of charging session tr        
        plugouttime=session_data['STOP_rounded_CET_lim'][tr] #departure time of charging session tr           
@@ -71,9 +72,7 @@ def optimization(session_data,DA_prices,timesteps):
     for t in timesteps:
         transactionlist=session_data[(t>=session_data['START_rounded_CET']) & (t<session_data['STOP_rounded_CET_lim'])] #all charging sessions connected to a charging station at timestep t
         m.addConstr(p_ch_tot[t]==gp.quicksum(p_ch_tr[tr][t] for tr in transactionlist['TR_NO'])) #the total charging power at timestep t equals the sum of the charging power of all charging sessions charging at this timestep.
-    
-   
-    obj=gp.quicksum((p_ch_tot[t]*DA_prices[t-datetime.timedelta(minutes=t.minute)]/1000*(model_resolution/60)) for t in timesteps) #objective is to minimize charging costs in the day-ahead market
+    obj=gp.quicksum((p_ch_tot[t]*DA_prices.loc[t-datetime.timedelta(minutes=t.minute),'Day-ahead price [EUR/MWh]']/1000*(model_resolution/60)) for t in timesteps) #objective is to minimize charging costs in the day-ahead market
 
     m.setObjective(obj, gp.GRB.MINIMIZE)  #set objective of the model
     m.update()
