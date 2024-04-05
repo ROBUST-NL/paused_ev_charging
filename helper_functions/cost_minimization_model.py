@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
 import gurobipy as gp
 import datetime
 import pandas as pd
 import numpy as np
+
 def cost_optimization(session_data,DA_prices,timesteps):
     """
     In this model, the charging schedules for all considered charging sessions are optimized to minimize the charging costs in the day-ahead electricity market. 

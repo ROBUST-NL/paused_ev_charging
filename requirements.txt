@@ -1,0 +1,7 @@
+gurobipy==11.0.1
+matplotlib==3.5.1
+numpy==1.22.3
+pandas==1.4.3
+pytz==2022.1
+seaborn==0.11.2
+tqdm==4.62.3
