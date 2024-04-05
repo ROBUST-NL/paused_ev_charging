@@ -28,9 +28,11 @@ def flexibility_provision_optimization(session_data,timesteps,timesteps_flex,bas
             'P_MIN': Minimum charging power of the charging session in kW. Equal to 0 if delayed and paused charging is possible. 
     timesteps : list
         List of all considered timesteps in the optimization, in CET. 
-    non_evload : pd.DataFrame
-        Pandas dataframe containing information about the total grid load without EVs for each timestep. It should contain the following column:
-            'Non-EV load': Grid load excluding EV charging for each timestep in kW
+    timesteps_flex : list
+        List of all considered timesteps for the considered flexibility timeframe, in CET. 
+    baseline_profile : pd.DataFrame90
+        Pandas dataframe containing the baseline charging profile in kW. It should contain the following column:
+            'EV_chargingpower' : charging power in kW
 
     Returns
     -------
@@ -58,7 +60,7 @@ def flexibility_provision_optimization(session_data,timesteps,timesteps_flex,bas
         binary[tr]=m.addVars(timesteps_tr,vtype=gp.GRB.BINARY) #create binary variables for all timesteps for charging session 'tr', that equals 1 if the EV is charging, and 0 if it has stopped charging. 
     binary[tr]=m.addVars(timesteps_tr,vtype=gp.GRB.BINARY) #create binary variables for all timesteps for charging session 'tr', that equals 1 if the EV is charging, and 0 if it has stopped charging. 
     p_ev_tot=m.addVars(timesteps_flex) #create a variable for the total EV charging demand
-    p_flex=m.addVar()    
+    p_flex=m.addVar() #create a variable for the total flexibility that can be provided during the flexibility time window   
     for tr in range(len(session_data.index)):
        plugintime=session_data['START_rounded_CET'][tr] #arrival time of charging session tr       
        plugouttime=session_data['STOP_rounded_CET_lim'][tr] #departure time of charging session tr
@@ -81,12 +83,12 @@ def flexibility_provision_optimization(session_data,timesteps,timesteps_flex,bas
 
     for t in timesteps_flex:
         transactionlist=session_data[(t>=session_data['START_rounded_CET']) & (t<session_data['STOP_rounded_CET_lim'])] #all charging sessions connected to a charging station at timestep t
-        p_baseline=baseline_profile.loc[t,'EV_chargingpower']
-        m.addConstr(p_ev_tot[t]==gp.quicksum(p_ch_tr[tr][t] for tr in transactionlist['TR_NO']))  #the total grid load at timestep t equals the sum of the charging power of all charging sessions at this timestep, and the total grid load excluding EV charging       
-        m.addConstr(p_flex==p_baseline-p_ev_tot[t])  #the total grid load at timestep t equals the sum of the charging power of all charging sessions at this timestep, and the total grid load excluding EV charging
+        p_baseline=baseline_profile.loc[t,'EV_chargingpower'] #the baseline charging power at the considered timestep
+        m.addConstr(p_ev_tot[t]==gp.quicksum(p_ch_tr[tr][t] for tr in transactionlist['TR_NO']))  #the total EV load at timestep t is equal to the sum of the charging power of all charging sessions at this timestep      
+        m.addConstr(p_flex==p_baseline-p_ev_tot[t])  #the total flexibility is equal to the difference between the baseline charging power and the optimized total EV charging power.
         
     
-    obj=p_flex #the objective is to minimize the peak grid load
+    obj=p_flex #the objective is to maximize the provided flexibility
 
     m.setObjective(obj, gp.GRB.MAXIMIZE) #set objective of the model
     m.update()
