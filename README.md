@@ -1,5 +1,6 @@
 
-# PAUSED-EV-CHARGING 
+# PAUSED-EV-CHARGING[![DOI](https://zenodo.org/badge/776002789.svg)](https://zenodo.org/doi/10.5281/zenodo.10932795)
+
 ![Static Badge](https://img.shields.io/badge/MADE_WITH-PYTHON_-orange?style=for-the-badge)
 
 [![matplotlib](https://img.shields.io/badge/matplotlib-3.5.1-blue.svg)](https://pypi.org/project/matplotlib/3.5.1/)
@@ -75,16 +76,21 @@ For the optimization solver, we used [![gurobipy](https://img.shields.io/badge/g
 
 ## Cite this work
 
-If you liked this work and want to use it in your research, please consider citing the original paper:
-
-```bibtex
-
-```
-
 If you re-use part of the code or some of the functions, please consider citing the repository:
 
-```bibtex  
-
+```bibtex
+@software{brinkel_2024_10932796,
+  author       = {Brinkel, Nico and
+                  Nanda Kishor Panda},
+  title        = {{ROBUST-NL/paused\_ev\_charging: Publication ready 
+                   code}},
+  month        = apr,
+  year         = 2024,
+  publisher    = {Zenodo},
+  version      = {v0.1.0},
+  doi          = {10.5281/zenodo.10932796},
+  url          = {https://doi.org/10.5281/zenodo.10932796}
+}
 ```
 
 ## Funding
