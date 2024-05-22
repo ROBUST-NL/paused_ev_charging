@@ -9,7 +9,7 @@
 [![tqdm](https://img.shields.io/badge/tqdm-4.62.3-blue.svg)](https://pypi.org/project/tqdm/4.62.3/)
 [![Gurobi Version](https://img.shields.io/badge/Gurobi-10.0.2-blue.svg)](https://www.gurobi.com/)
 
-This repository contains the codes and results which is published in the paper titled: **"Unlocking the full potential of smart charging: Addressing paused and delayed charging problems in electric vehicles"**.
+This repository contains the codes and results which is published in the paper titled: **"Enhancing smart charging in electric vehicles by addressing paused and delayed charging problems"**.
 
 The following repository is maintained by [Nico Brinkel](https://github.com/nicobrinkel) and [Nanda Kishor Panda](https://github.com/nkpanda97)
 
